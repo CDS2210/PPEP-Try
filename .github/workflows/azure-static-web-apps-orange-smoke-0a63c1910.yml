@@ -11,26 +11,41 @@ jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
+    name: Build and Deploy
     steps:
       - uses: actions/checkout@v4
 
-      # Build with Node 20 so Angular is happy
+      # Build with Node 20 so Angular CLI is supported
       - uses: actions/setup-node@v4
         with:
           node-version: '20.19.0'
           cache: 'npm'
 
-      - run: npm ci
-      - run: npx ng build -c production
+      - name: Install deps
+        run: npm ci
 
-      # Upload the built artifacts (no Oryx build)
+      - name: Build Angular (production)
+        run: npx ng build -c production
+
+      # Deploy the *built* browser bundle (skip Oryx build)
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_SMOKE_0A63C1910 }}
           action: upload
-          app_location: "/"                                   # repo root
-          app_artifact_location: "dist/My-first-angular-app"  # <-- use this when skip_app_build=true
+          app_location: "dist/My-first-angular-app/browser"  # folder that contains index.html
           skip_app_build: true
-          api_location: ""            # no Functions
-          data_api_location: ""       # avoid default 'swa-db-connections'
+          api_location: ""
+          data_api_location: ""
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_SMOKE_0A63C1910 }}
+          action: close
+
