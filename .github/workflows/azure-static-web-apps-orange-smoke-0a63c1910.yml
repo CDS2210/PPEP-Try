@@ -15,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Build with a Node version Angular 20+ supports
       - uses: actions/setup-node@v4
         with:
           node-version: '20.19.0'
@@ -26,23 +27,62 @@ jobs:
       - name: Build Angular (production)
         run: npx ng build -c production
 
-      - name: Show dist
-        run: ls -la dist/My-first-angular-app || true
-
-      # Copy SPA fallback config into the artifact folder so SWA will pick it up
-      - name: Copy SWA config into dist
+      # Find where index.html was emitted (browser/, prerender/, i18n subfolder, etc.)
+      - name: Locate deploy folder
+        id: probe
+        shell: bash
         run: |
-          if [ -f staticwebapp.config.json ]; then
-            cp staticwebapp.config.json dist/My-first-angular-app/
+          set -e
+          ROOT="dist/My-first-angular-app"
+
+          echo "== Dist tree (first 3 levels) =="
+          find "$ROOT" -maxdepth 3 -type d -print | sed 's/^/  /'
+
+          # If SSR produced index.csr.html anywhere, rename it to index.html
+          CSR="$(find "$ROOT" -type f -name 'index.csr.html' | head -n1 || true)"
+          if [ -n "$CSR" ]; then
+            echo "Renaming: $CSR -> $(dirname "$CSR")/index.html"
+            mv "$CSR" "$(dirname "$CSR")/index.html"
           fi
 
+          INDEX="$(find "$ROOT" -type f -name 'index.html' | head -n1 || true)"
+          if [ -z "$INDEX" ]; then
+            echo "::error::No index.html found under $ROOT"
+            echo "Files under $ROOT:"
+            find "$ROOT" -maxdepth 3 -type f | sed 's/^/  /'
+            exit 1
+          fi
+
+          DEPLOY_DIR="$(dirname "$INDEX")"
+          echo "Deploying from: $DEPLOY_DIR"
+          echo "deploy_dir=$DEPLOY_DIR" >> "$GITHUB_OUTPUT"
+
+      # Copy SPA config next to the discovered index.html (so SWA picks it up)
+      - name: Copy SWA config into deploy dir
+        if: steps.probe.outputs.deploy_dir != ''
+        run: |
+          if [ -f staticwebapp.config.json ]; then
+            cp staticwebapp.config.json "${{ steps.probe.outputs.deploy_dir }}/"
+          fi
+
+      # Upload already-built files (skip Oryx build)
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_SMOKE_0A63C1910 }}
           action: upload
-          app_location: "dist/My-first-angular-app"  # deploy the prerendered output
+          app_location: ${{ steps.probe.outputs.deploy_dir }}   # <- exact folder with index.html
           skip_app_build: true
           api_location: ""
           data_api_location: ""
 
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_SMOKE_0A63C1910 }}
+          action: close
