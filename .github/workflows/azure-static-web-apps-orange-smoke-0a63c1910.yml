@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Build with Node 20 (Angular 20+ compatible)
+      # Build with Node 20 (Angular 20 compatible)
       - uses: actions/setup-node@v4
         with:
           node-version: '20.19.0'
@@ -27,54 +27,16 @@ jobs:
       - name: Build Angular (production)
         run: npx ng build -c production
 
-      # Probe for index.html and pick the correct deploy directory
-      - name: Locate deploy folder
-        id: probe
-        shell: bash
-        run: |
-          set -e
-          ROOT="dist/My-first-angular-app/browser"
-          DEPLOY="$ROOT"
-
-          echo "== Listing $ROOT (if it exists) =="
-          ls -la "$ROOT" || true
-
-          # If Angular produced index.csr.html (SSR projects sometimes do), rename it.
-          if [ -f "$ROOT/index.csr.html" ] && [ ! -f "$ROOT/index.html" ]; then
-            echo "Renaming index.csr.html -> index.html"
-            mv "$ROOT/index.csr.html" "$ROOT/index.html"
-          fi
-
-          # If index.html still missing, search one/two levels deeper (i18n or prerender)
-          if [ ! -f "$ROOT/index.html" ]; then
-            CANDIDATE="$(find "$ROOT" -maxdepth 3 -type f -name 'index.html' | head -n1 || true)"
-            if [ -n "$CANDIDATE" ]; then
-              DEPLOY="$(dirname "$CANDIDATE")"
-              echo "Found nested index.html at: $CANDIDATE"
-            else
-              echo "ERROR: No index.html found under $ROOT"
-              echo "Contents of dist (for debug):"
-              find dist -maxdepth 3 -type f | sed 's/^/  /'
-              exit 1
-            fi
-          fi
-
-          echo "Using deploy_dir=$DEPLOY"
-          echo "deploy_dir=$DEPLOY" >> "$GITHUB_OUTPUT"
-          echo "== Final deploy dir listing =="
-          ls -la "$DEPLOY"
-
-      # Deploy the built folder (skip Oryx build entirely)
+      # Deploy the *prerendered* output (has index.html at dist/<project>/)
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_SMOKE_0A63C1910 }}
           action: upload
-          app_location: ${{ steps.probe.outputs.deploy_dir }}   # computed folder that contains index.html
+          app_location: "dist/My-first-angular-app"   # <-- NOTE: dist root (not browser/)
           skip_app_build: true
           api_location: ""
           data_api_location: ""
-          # ensure SWA picks up your SPA fallback file from repo root
           config_file_location: "staticwebapp.config.json"
 
   close_pull_request_job:
@@ -87,5 +49,3 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_SMOKE_0A63C1910 }}
           action: close
-
-
