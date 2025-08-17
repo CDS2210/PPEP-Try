@@ -1,0 +1,156 @@
+:host {
+  --bg: #FAF7F2;
+  --surface: #FFFFFF;
+  --beige-100: #F5EFE6;
+  --beige-300: #DCCFBE;
+  --stone-800: #3F3A34;
+  --line: #E7DFD6;
+  --accent: #C57E6D;
+  --accent-700: #A76858;
+  --shadow-sm: 0 2px 12px rgba(0,0,0,.06);
+  --shadow-md: 0 10px 36px rgba(0,0,0,.10);
+  display: block;
+  background: var(--bg);
+}
+
+/* Layout */
+.auth-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+}
+@media (max-width: 980px) { .auth-layout { grid-template-columns: 1fr; } }
+
+/* Left column */
+.media-stack {
+  position: relative;
+  padding: 24px;
+  background: var(--beige-100);
+}
+
+/* New brand bar (replaces old brand-ribbon) */
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px; /* space before the image rail */
+}
+
+/* Logo (kept tasteful to avoid overlap) */
+.brand-logo {
+  height: clamp(44px, 6vw, 72px);
+  width: auto;
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+/* Heading next to the logo */
+.brand-title {
+  margin: 0;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+
+  letter-spacing: -0.01em;
+  color: var(--stone-800);
+  font-weight: 700;
+}
+
+/* Remove old absolute-positioned rule if present */
+.brand-ribbon { display: none; }
+
+/* Image rail */
+.media-rail {
+  width: min(620px, 92%);
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px; /* was 72px when logo overlapped */
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+  background: #ddd;
+  aspect-ratio: 16 / 7;
+}
+.media img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center 20%;
+}
+
+.overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(250,247,242,0.02) 0%,
+    rgba(250,247,242,0.08) 35%,
+    rgba(250,247,242,0.12) 100%
+  );
+  pointer-events: none;
+}
+
+/* Right panel */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  border-radius: 22px;
+  margin: 40px 36px 40px 0;
+  padding: 36px;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+@media (max-width: 980px) { .panel { border-radius: 22px; margin: 18px; } }
+
+.panel-head h2 {
+  margin: 0 0 4px;
+  color: var(--stone-800);
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  letter-spacing: -0.012em;
+}
+.sub { color: #7e776f; margin: 0; }
+
+/* Form */
+.form { display: grid; gap: 14px; }
+.field { display: grid; gap: 8px; }
+label { color: var(--stone-800); font-weight: 600; font-size: .9rem; }
+.input {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: #fff;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+  font-size: 0.95rem;
+}
+.input::placeholder { color: #9b938a; }
+.input:focus { border-color: var(--beige-300); box-shadow: 0 0 0 4px rgba(197,126,109,.08); }
+
+/* Buttons */
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.btn {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 16px; border-radius: 12px;
+  border: 1px solid var(--line); background: #fff; color: var(--stone-800);
+  cursor: pointer; font-weight: 600; letter-spacing: .02em;
+  transition: transform .06s ease, background .2s ease, border-color .2s ease;
+}
+.btn:hover { background: var(--beige-100); }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: #fff; border-color: transparent; box-shadow: var(--shadow-sm); }
+.btn-primary:hover { background: var(--accent-700); }
+
+/* Helpers */
+.meta { margin-top: 6px; text-align: center; }
+.link { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; font-weight: 600; }
+.link:hover { color: var(--accent-700); }
+
+.error { color: #b45353; font-size: .85rem; }
+.error-line { color: #b45353; margin-top: 8px; }
+.signed { margin-top: 10px; }
+.signed-in, .signed-out { color: #6f685f; }
