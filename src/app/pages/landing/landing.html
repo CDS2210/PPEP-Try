@@ -6,7 +6,7 @@
     <p class="subtitle">Crafting timeless memories for your special day</p>
   </header>
 
-  <!-- Info panels (removed 'Our People') -->
+  <!-- Info panels (2 only) -->
   <section class="image-panels">
     <div class="panel">
       <h2>Venues & Invitations</h2>
@@ -19,14 +19,12 @@
     </div>
   </section>
 
-  <!-- Keep your exact structure and buttons -->
+  <!-- Account / actions -->
   @if (auth.user(); as u) {
     <section class="account-area">
       <p class="greeting">Hi {{ u.email ?? 'there' }} 👋</p>
 
-      <button class="btn btn-primary" (click)="loadRecent()" [disabled]="loading">
-        {{ loading ? 'Loading…' : 'Load recent test-users' }}
-      </button>
+      <!-- Removed the 'Load recent test-users' button -->
 
       @if (docs.length) {
         <ul class="recent-list">
