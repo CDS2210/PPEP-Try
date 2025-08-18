@@ -1,7 +1,7 @@
 <section class="auth-layout">
   <!-- LEFT: vertical stack of 3 slides -->
   <aside class="media-stack">
-    <!-- Brand bar: logo + title (no overlap) -->
+    <!-- Brand bar: logo + title -->
     <div class="brand-bar">
       <img class="brand-logo" src="assets/logo.jpg" alt="Vows & Veils logo" />
       <h1 class="brand-title">Vows & Veils</h1>
@@ -26,57 +26,18 @@
     </div>
   </aside>
 
-  <!-- RIGHT: form panel -->
+  <!-- RIGHT: panel with ONLY the Google button -->
   <main class="panel">
     <header class="panel-head">
       <h2>Welcome back</h2>
       <p class="sub">Sign in to continue planning your day.</p>
     </header>
 
-    <form [formGroup]="form" (ngSubmit)="onSignIn()" class="form">
-      <div class="field">
-        <label for="name">Name</label>
-        <input id="name" class="input" type="text" formControlName="name" placeholder="Your name" />
-      </div>
-
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" class="input" type="email" formControlName="email" placeholder="you@example.com" />
-        @if (form.controls.email.touched && form.controls.email.invalid) {
-          <small class="error">Email is required and must be valid.</small>
-        }
-      </div>
-
-      <div class="field">
-        <label for="password">Password</label>
-        <input id="password" class="input" type="password" formControlName="password" placeholder="••••••••" />
-        @if (form.controls.password.touched && form.controls.password.invalid) {
-          <small class="error">Password is required (min 6 chars).</small>
-        }
-      </div>
-
-      <div class="actions">
-        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || auth.loading()">Sign In</button>
-        <button type="button" class="btn" (click)="onSignUp()" [disabled]="form.invalid || auth.loading()">Create account</button>
-      </div>
-
-      <div class="meta">
-        <button type="button" class="link" (click)="onResetPassword()" [disabled]="!form.controls.email.value">
-          Forgot password?
-        </button>
-      </div>
-
-      <!-- extra controls from your current structure -->
-      <div class="actions">
-        <button type="button" class="btn" (click)="onSignOut()" [disabled]="!auth.user()">Sign out</button>
-        <button type="button" class="btn" (click)="onVerifyEmail()" [disabled]="!auth.user()">Verify email</button>
-      </div>
-
-      <div class="actions">
-        <button type="button" class="btn" (click)="onGoogle()" [disabled]="auth.loading()">Continue with Google</button>
-        <button type="button" class="btn" (click)="onLinkGoogle()" [disabled]="!auth.user() || auth.loading()">Link Google</button>
-      </div>
-    </form>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" (click)="onGoogle()" [disabled]="auth.loading()">
+        Continue with Google
+      </button>
+    </div>
 
     <footer class="signed">
       <ng-container *ngIf="auth.user() as u; else notSignedIn">
